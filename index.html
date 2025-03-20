@@ -9,19 +9,30 @@
             margin: 0;
             overflow: hidden;
             background: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
         }
         canvas {
             display: block;
+            margin: 0 auto;
         }
     </style>
 </head>
 <body>
+    <h1>Space Invaders</h1>
+    <h2>Score: <span id="score">0</span></h2>
+    <h2>Time Left: <span id="timer">60</span> sec</h2>
     <canvas id="gameCanvas"></canvas>
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         canvas.width = 800;
         canvas.height = 600;
+
+        let score = 0;
+        let timeLeft = 60;
+        let gameRunning = true;
 
         class Player {
             constructor() {
@@ -100,6 +111,7 @@
         });
 
         function updateGame() {
+            if (!gameRunning) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             player.move();
             player.draw();
@@ -120,13 +132,30 @@
                     ) {
                         enemies.splice(eIndex, 1);
                         player.projectiles.splice(pIndex, 1);
+                        score += 10;
+                        document.getElementById("score").innerText = score;
                     }
                 });
             });
             requestAnimationFrame(updateGame);
         }
 
+        function startTimer() {
+            const timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    document.getElementById("timer").innerText = timeLeft;
+                } else {
+                    clearInterval(timerInterval);
+                    gameRunning = false;
+                    alert("Game Over! Your score: " + score);
+                }
+            }, 1000);
+        }
+
+        startTimer();
         updateGame();
     </script>
 </body>
 </html>
+
