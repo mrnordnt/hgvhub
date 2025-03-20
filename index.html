@@ -79,7 +79,9 @@
                 this.y = y;
                 this.width = 40;
                 this.height = 20;
-                this.speed = 1;
+                this.speed = 0.5;
+                this.direction = 1;
+                this.moveCount = 0;
             }
             draw() {
                 ctx.fillStyle = "green";
@@ -87,6 +89,11 @@
             }
             update() {
                 this.y += this.speed;
+                this.moveCount++;
+                if (this.moveCount >= 100) {
+                    this.speed = -this.speed;
+                    this.moveCount = 0;
+                }
             }
         }
 
