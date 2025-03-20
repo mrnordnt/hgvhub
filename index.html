@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Invaders</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class Player {
+            constructor() {
+                this.width = 50;
+                this.height = 20;
+                this.x = canvas.width / 2 - this.width / 2;
+                this.y = canvas.height - this.height - 10;
+                this.speed = 5;
+                this.projectiles = [];
+            }
+            draw() {
+                ctx.fillStyle = "white";
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+            move() {
+                if (keys["ArrowLeft"] && this.x > 0) this.x -= this.speed;
+                if (keys["ArrowRight"] && this.x + this.width < canvas.width) this.x += this.speed;
+            }
+            shoot() {
+                this.projectiles.push(new Projectile(this.x + this.width / 2 - 2, this.y));
+            }
+        }
+
+        class Projectile {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 5;
+                this.height = 10;
+                this.speed = 7;
+            }
+            draw() {
+                ctx.fillStyle = "red";
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+            update() {
+                this.y -= this.speed;
+            }
+        }
+
+        class Enemy {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 40;
+                this.height = 20;
+                this.speed = 1;
+            }
+            draw() {
+                ctx.fillStyle = "green";
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+            update() {
+                this.y += this.speed;
+            }
+        }
+
+        const player = new Player();
+        const enemies = [];
+        for (let i = 0; i < 5; i++) {
+            for (let j = 0; j < 8; j++) {
+                enemies.push(new Enemy(j * 50 + 100, i * 30 + 50));
+            }
+        }
+
+        const keys = {};
+        document.addEventListener("keydown", (event) => {
+            keys[event.key] = true;
+            if (event.key === " ") {
+                event.preventDefault(); // Prevents spacebar from scrolling the page
+                player.shoot();
+            }
+        });
+        document.addEventListener("keyup", (event) => {
+            keys[event.key] = false;
+        });
+
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            player.move();
+            player.draw();
+            player.projectiles.forEach((proj, index) => {
+                proj.update();
+                proj.draw();
+                if (proj.y < 0) player.projectiles.splice(index, 1);
+            });
+            enemies.forEach((enemy, eIndex) => {
+                enemy.update();
+                enemy.draw();
+                player.projectiles.forEach((proj, pIndex) => {
+                    if (
+                        proj.x < enemy.x + enemy.width &&
+                        proj.x + proj.width > enemy.x &&
+                        proj.y < enemy.y + enemy.height &&
+                        proj.y + proj.height > enemy.y
+                    ) {
+                        enemies.splice(eIndex, 1);
+                        player.projectiles.splice(pIndex, 1);
+                    }
+                });
+            });
+            requestAnimationFrame(updateGame);
+        }
+
+        updateGame();
+    </script>
+</body>
+</html>
